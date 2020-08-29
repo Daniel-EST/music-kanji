@@ -7,5 +7,5 @@ def parse_csv(csv_string):
     rows = data[1:]
 
     for row in rows:
-        if len(row) > 0:
+        if row:
             yield dict(zip(labels, row))

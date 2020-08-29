@@ -17,3 +17,5 @@ class SpotifyClientTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+# TODO CREATE MORE INTEGRATION TESTS

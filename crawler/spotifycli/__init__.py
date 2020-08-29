@@ -8,7 +8,7 @@ class SpotifyClient:
     def __init__(self, client_id, client_secret):
         self.__client_id = client_id
         self.__client_secret = client_secret
-        self.__base64_credentials = base64.b64encode(f'{client_id}:{client_secret}'.encode())\
+        self.__base64_credentials = base64.b64encode(f'{client_id}:{client_secret}'.encode()) \
             .decode("utf-8")
 
     def auth(self):
