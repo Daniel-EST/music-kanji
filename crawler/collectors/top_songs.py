@@ -41,6 +41,8 @@ class SpotifyTopSongs(Crawler):
         self.__url = f'https://spotifycharts.com/regional/{country}/{recurrence}/{date}'
 
     def get_data(self):
+        # TODO ERROR PROTECTION
+
         headers = {
             'User-Agent': """Mozilla/5.0 (Windows NT 10.0; Win64; x64)""",
             'Cache - Control': 'no-cache'
@@ -91,6 +93,8 @@ class UtamapTopSongs(Crawler):
             return f'http://ranking.utamap.com/{url_date}f/'
 
     def __get_data_daily(self):
+        # TODO ERROR PROTECTION
+
         data = requests.get(self.__url).text
         soup = BeautifulSoup(data, 'html.parser')
 
@@ -114,6 +118,8 @@ class UtamapTopSongs(Crawler):
             yield music_info
 
     def __get_data_weekly(self):
+        # TODO ERROR PROTECTION
+
         r = requests.get(self.__url)
         r.encoding = 'shift-jis'
         data = r.text

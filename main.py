@@ -1,5 +1,5 @@
 import os
-from pprint import pprint
+import pprint
 
 from crawler import spotifycli
 from crawler.collectors.top_songs import SpotifyTopSongs
@@ -25,9 +25,9 @@ def main():
     for song in data:
         print(song)
 
-   # spotify = spotifycli.SpotifyClient(CLIENT_ID, CLIENT_SECRET)
-   # spotify_auth = spotify.auth()
-   # pprint(spotify_auth.search('Muse', tp='artist'))
+    spotify = spotifycli.SpotifyClient(CLIENT_ID, CLIENT_SECRET)
+    spotify_auth = spotify.auth()
+    pprint.pprint(spotify_auth.search('Muse', tp='artist'))
 
 
 if __name__ == '__main__':
