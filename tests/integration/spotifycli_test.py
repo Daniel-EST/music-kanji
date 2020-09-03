@@ -13,7 +13,7 @@ class SpotifyClientTests(unittest.TestCase):
 
         with self.assertRaises(InvalidCredentials):
             spotify_client.auth()
-''
+
 
 if __name__ == '__main__':
     unittest.main()

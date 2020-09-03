@@ -6,17 +6,22 @@ from datetime import timedelta
 from bs4 import BeautifulSoup
 
 from crawler import Crawler
-from crawler.utils import parse_csv
+from crawler.utils import parse_spotify_csv
 from crawler.exceptions import InvalidCountry
 from crawler.exceptions import InvalidRecurrence
 from crawler.exceptions import InvalidDate
 
-
-AVAILABLE_COUNTRIES = ['global', 'br', 'jp']  # TODO: ADD ALL AVAILABLE COUNTRIES
+AVAILABLE_COUNTRIES = ['global', 'us', 'gb', 'ar', 'at', 'au', 'be', 'bg', 'bo', 'br', 'ca', 'ch', 'cl', 'co', 'cr',
+                       'cy', 'cz', 'de', 'dk', 'do', 'ec', 'ee', 'es', 'fi', 'fr', 'gr', 'gt', 'hk', 'hn', 'hu', 'id',
+                       'ie', 'il', 'in', 'is', 'it', 'jp', 'lt', 'lu', 'lv', 'mx', 'my', 'ni', 'nl', 'no', 'nz', 'pa',
+                       'pe', 'ph', 'pl', 'pt', 'py', 'ro', 'ru', 'se', 'sg', 'sk', 'sv', 'th', 'tr', 'tw', 'ua', 'uy',
+                       'vn', 'za']
 
 
 class SpotifyTopSongs(Crawler):
     def __init__(self, country='global', recurrence='daily', date='latest'):
+        # TODO REFACTOR
+        # TODO HANDLE DATE = LATEST WHEN RECURRENCE IS WEEKLY
         super().__init__()
         if country not in AVAILABLE_COUNTRIES:
             raise InvalidCountry
@@ -27,17 +32,22 @@ class SpotifyTopSongs(Crawler):
         elif recurrence == 'daily':
             if date != 'latest':
                 try:
-                    if datetime.strptime(date, '%Y-%m-%d') > datetime.today():
+                    self.__date = datetime.strptime(date, '%Y-%m-%d')
+                    if self.__date > datetime.today():
                         raise InvalidDate(date)
 
                 except ValueError:
                     raise InvalidDate(date)
+            else:
+                self.__date = datetime.now()
 
         elif recurrence == 'weekly':
-            final_date = datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)
+            self.__date = datetime.strptime(date, '%Y-%m-%d')
+            final_date = self.__date + timedelta(days=1)
             start_date = final_date - timedelta(days=7)
             date = f'{start_date.strftime("%Y-%m-%d")}--{final_date.strftime("%Y-%m-%d")}'
 
+        self.__recurrence = recurrence
         self.__url = f'https://spotifycharts.com/regional/{country}/{recurrence}/{date}'
 
     def get_data(self):
@@ -50,17 +60,25 @@ class SpotifyTopSongs(Crawler):
 
         data_url = f'{self.__url}/download'
         csv_string = requests.get(data_url, headers).text
-        csv_string = re.sub(',,,.*\n', '', csv_string)
-        data = parse_csv(csv_string)
+        csv_string = re.sub(r',,,.*\n', str(), csv_string)
+        parsed_data = parse_spotify_csv(csv_string)
 
-        return data
+        for music_info in parsed_data:
+            music_info['Recurrence'] = self.__recurrence
+            music_info['date'] = self.__date
+            music_info['date_collected'] = datetime.now()
+            music_info['source'] = 'spotify'
+
+            yield music_info
 
 
 class UtamapTopSongs(Crawler):
     def __init__(self, recurrence='daily', date='latest'):
+        # TODO REFACTOR
         super().__init__()
         if recurrence in ['daily', 'weekly', 'top500']:
             self.__recurrence = recurrence
+
             if date == 'latest':
                 self.__date = datetime.today()
 
@@ -74,6 +92,8 @@ class UtamapTopSongs(Crawler):
                 if self.__date > datetime.today():
                     raise InvalidDate(date)
 
+                elif self.__date < datetime(2018, 9, 9):
+                    raise InvalidDate(date)
         else:
             raise InvalidRecurrence
 
@@ -103,16 +123,20 @@ class UtamapTopSongs(Crawler):
 
         for position, music_info in enumerate(musics_info):
             music_info = music_info.find_all('td')
-            music_artist = music_info[2].text
+            music_artist = music_info[2].text.strip()
+            music_name = music_info[1].text.strip()
             music_position = position + 1
-            music_name = music_info[1].text
-            music_url = music_info[1].find('a').get('href')
+            music_url = music_info[1].find('a').get('href').strip()
 
             music_info = {
                 'Position': music_position,
+                'Recurrence': self.__recurrence,
                 'Track Name': music_name,
                 'Artist': music_artist,
-                'URL': music_url
+                'URL': music_url,
+                'date': self.__date,
+                'date_collected': datetime.now(),
+                'source': 'utamap'
             }
 
             yield music_info
@@ -131,15 +155,20 @@ class UtamapTopSongs(Crawler):
 
         for position, music_info in enumerate(musics_info):
             music_info = music_info.find_all('td')
-            music_artist = music_info[2].text
-            music_name = music_info[1].text
+            music_artist = music_info[2].text.strip()
+            music_name = music_info[1].text.strip()
             music_position = position + 1
-            music_url = music_info[1].find('a').get('href')
+            music_url = music_info[1].find('a').get('href').strip()
+
             music_info = {
                 'Position': music_position,
+                'Recurrence': self.__recurrence,
                 'Track Name': music_name,
                 'Artist': music_artist,
-                'URL': music_url
+                'URL': music_url,
+                'date': self.__date,
+                'date_collected': datetime.now(),
+                'source': 'utamap'
             }
 
             yield music_info

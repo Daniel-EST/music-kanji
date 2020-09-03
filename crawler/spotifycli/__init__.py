@@ -34,7 +34,7 @@ class SpotifyClientAuthenticated(SpotifyClient):
         self.__expiration = token_info['expires_in']
         self.__scope = token_info['scope']
 
-    def search(self, query, tp='artist', market='US', limit=10, offset=5):
+    def search(self, query, tp='artist', market=None, limit=None, offset=None):
         params = {
             'q': query,
             'type': tp,

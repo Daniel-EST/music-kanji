@@ -2,8 +2,12 @@ import csv
 import re
 
 
-def parse_csv(csv_string):
-    data = list(csv.reader(csv_string.split('\n')))
+def parse_spotify_csv(csv_string):
+    data = list(
+        csv.reader(
+            list(map(lambda x: x.strip(), csv_string.split('\n')))
+        )
+    )
     labels = data[0]
     rows = data[1:]
 
@@ -47,6 +51,9 @@ def match_japanese(char):
     elif match_kanji(char):
         return char
 
+    elif re.search(r'\s', char, re.U):
+        return r' '
+
     return str()
 
 
@@ -58,4 +65,10 @@ def clean_lyrics(lyrics):
 
     japanese_filter = filter(lambda char: match_japanese(char), lyrics)
     lyrics = ''.join(japanese_filter).strip()
+    lyrics = re.sub(r'\s+', r' ', lyrics)
     return lyrics
+
+
+def lyrics_to_list(lyrics):
+    # TODO PROTECT FROM ERRORS
+    return lyrics.split(' ')

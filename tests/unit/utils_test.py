@@ -1,23 +1,24 @@
 import unittest
 
-from crawler.utils import parse_csv
+from crawler.utils import parse_spotify_csv
 from crawler.utils import match_hiragana
 from crawler.utils import match_katakana
 from crawler.utils import match_kanji
 from crawler.utils import match_japanese
 from crawler.utils import clean_lyrics
+from crawler.utils import lyrics_to_list
 
 
 class TestUtils(unittest.TestCase):
     def test_parse_csv(self):
         csv_string = 'column_1,column_2,column_3\na,b,c'
-        result = list(parse_csv(csv_string))
+        result = list(parse_spotify_csv(csv_string))
         self.assertEqual([{'column_1': 'a',
                            'column_2': 'b',
                            'column_3': 'c'}], result)
 
         csv_string = 'column_1,column_2,column_3\na,b,c\nd,e,f'
-        result = list(parse_csv(csv_string))
+        result = list(parse_spotify_csv(csv_string))
         self.assertEqual([{'column_1': 'a',
                            'column_2': 'b',
                            'column_3': 'c'},
@@ -26,7 +27,7 @@ class TestUtils(unittest.TestCase):
                            'column_3': 'f'}], result)
 
         csv_string = 'column_1,column_2,column_3\na,b,c\nd,e,f\n'
-        result = list(parse_csv(csv_string))
+        result = list(parse_spotify_csv(csv_string))
         self.assertEqual([{'column_1': 'a',
                            'column_2': 'b',
                            'column_3': 'c'},
@@ -121,11 +122,26 @@ class TestUtils(unittest.TestCase):
 
         jp_text = 'バカmitai 子供なのね'
         result = clean_lyrics(jp_text)
+        self.assertEqual('バカ 子供なのね', result)
+
+        jp_text = 'バカmitai子供なのね'
+        result = clean_lyrics(jp_text)
         self.assertEqual('バカ子供なのね', result)
 
-        jp_text = 'Bakamitai Kodomo na no ne!'
+        jp_text = 'バカmitai 子供         なの  ね        '
+        result = clean_lyrics(jp_text)
+        self.assertEqual('バカ 子供 なの ね', result)
+
+        jp_text = '  Bakamitai Kodomo na no ne ! '
         result = clean_lyrics(jp_text)
         self.assertEqual(str(), result)
+
+    def test_lyrics_to_list(self):
+        jp_text = '天上天下繋ぐ花火哉 万代と刹那の出会ひ 忘るまじ我らの夏を'
+        result = lyrics_to_list(jp_text)
+        self.assertEqual(['天上天下繋ぐ花火哉',
+                          '万代と刹那の出会ひ',
+                          '忘るまじ我らの夏を'], result)
 
 
 if __name__ == '__main__':
